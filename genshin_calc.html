@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>【幻想神域】ダメージ計算シミュレータ</title>
+<meta name="description" content="幻想神域のダメージ計算シミュレータ。">
+<link rel="stylesheet" href="./genshin_calc.css" type="text/css" media="all" />
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/themes/ui-lightness/jquery-ui.css"  type="text/css" media="all">
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
+<script type="text/javascript" src="./decimal.js"></script>
+<script type="text/javascript" src="./genshin_def.js"></script>
+</head>
+<body>
+<header>
+<pre id="VERSION"></pre>
+<pre id="SHORTENED_URL"><label>短縮URL：<input type="url" value="http://goo.gl/d6Ih44" onclick="this.select(0, this.value.length)" readonly="readonly"></label></pre>
+</header>
+<section>
+<div id="LEFT">
+<fieldset id="攻撃側">
+<legend>攻撃側(自キャラ)</legend>
+<p><label>武器：<select id="武器" onchange="UI.weponChange()"></select></label><label>　武器属性：<select id="属性一致武器"></select></label>
+<p><label>レベル：<input type="number" id="キャラレベル" value="80" min="1" max="999" required autofocus></label>
+<input type="button" value="+1" onClick="UI.add('#キャラレベル', this.value);UI.skillLVChange();UI.calcDefenceRate();">
+<input type="button" value="-1" onClick="UI.add('#キャラレベル', this.value);UI.skillLVChange();UI.calcDefenceRate();"><label title="幻想神域クライアント<br/>→右下のスキル→メインスキルのスキルアイコン下部の緑色の数字にカーソルを当てると＋XXと表示されるので、その数字を入力してください。"> スキルレベル＋：<input type="number" id="スキルLVプラス" class="SMALL" value="5" min="3" max="999"></label>
+<input type="button" value="+1" onClick="UI.add('#スキルLVプラス', this.value);UI.skillLVChange();">
+<input type="button" value="-1" onClick="UI.add('#スキルLVプラス', this.value);UI.skillLVChange();">
+<p><label title="攻撃力欄にスキルダメージを直接入力しても計算上の問題はありませんが、通常攻撃は無属性、ラピス、EXアビが入力できない仕様のためご注意ください。">攻撃力：<input type="number" id="攻撃力" class="ATK" value="300000" step="1000" min="0" max="1000000000"></label>
+<p><label>会心率：<input type="number" id="会心率" class="LARGE" value="100.00" data-type="1" data-toFixed="2" step="0.01" min="0" max="100.00">%</label>
+<input type="button" value="+1" onClick="UI.add('#会心率', this.value);">
+<input type="button" value="-1" onClick="UI.add('#会心率', this.value);">
+<input type="button" value="+0.8" onClick="UI.add('#会心率', this.value);">
+<input type="button" value="-0.8" onClick="UI.add('#会心率', this.value);">
+<p><label>会心ダメージ増加率：<input type="number" id="会心ダメージ増加率" value="300" min="100" max="400">%</label>
+<input type="button" value="+10" onClick="UI.add('#会心ダメージ増加率', this.value);">
+<input type="button" value="-10" onClick="UI.add('#会心ダメージ増加率', this.value);">
+<input type="button" value="+25" onClick="UI.add('#会心ダメージ増加率', this.value);">
+<input type="button" value="-25" onClick="UI.add('#会心ダメージ増加率', this.value);">	(ボス会心含む)
+<fieldset>
+<legend>スキル</legend>
+<p>武器特化
+<label><input type="radio" name="特化" value="1" onClick="UI.SkillExOnChanged(this);" checked> 左側 </label>
+<label><input type="radio" name="特化" value="2" onClick="UI.SkillExOnChanged(this);"> 右側 </label>
+<table id="skillTable">
+	<thead>
+		<tr>
+			<th class="hidden">UID</th>
+			<th>スキル名</th>
+			<th>Lv</th>
+			<th>属性</th>	
+			<th>倍率</th>
+			<th title="共通クールダウン">GCD</th>
+			<th class="COL_CHARGE">チャージ</th>
+			<th title="この列には奥義/アビリティ/レジェンド武器のスキルダメージ増加率を合算して入力してください">EX<br>アビ</th>
+			<th>ラピス</th>
+		</tr>
+	</thead>
+	<tbody></tbody>
+</table>
+</fieldset>
+<fieldset>
+<legend>ダメージ増加率</legend>
+<p><label>メイン武器：<input type="number" id="メイン武器ダメ増加" value="12" step="1" min="0" max="9999">%</label>
+<input type="button" value="+10" onClick="UI.add('#メイン武器ダメ増加', this.value);">
+<input type="button" value="-10" onClick="UI.add('#メイン武器ダメ増加', this.value);">
+<input type="button" value="+1" onClick="UI.add('#メイン武器ダメ増加', this.value);">
+<input type="button" value="-1" onClick="UI.add('#メイン武器ダメ増加', this.value);">	
+<hr>
+<p><label>ボスダメージ：<input type="number" id="ボスダメ増加" value="90" min="0" max="9999">%</label>
+<input type="button" value="+10" onClick="UI.add('#ボスダメ増加', this.value);">
+<input type="button" value="-10" onClick="UI.add('#ボスダメ増加', this.value);">
+<input type="button" value="+1" onClick="UI.add('#ボスダメ増加', this.value);">
+<input type="button" value="-1" onClick="UI.add('#ボスダメ増加', this.value);">
+<hr>
+<p><label>属性スキル：<select id="属性スキル"></select><input type="number" id="属性スキルダメージ増加率"  value="0" min="0" max="9999">%</label>
+<input type="button" value="+10" onClick="UI.add('#属性スキルダメージ増加率', this.value);">
+<input type="button" value="-10" onClick="UI.add('#属性スキルダメージ増加率', this.value);">
+<input type="button" value="+1" onClick="UI.add('#属性スキルダメージ増加率', this.value);">
+<input type="button" value="-1" onClick="UI.add('#属性スキルダメージ増加率', this.value);">
+<p><label>XX属性の敵へ：<input type="number" id="XX属性の敵へダメージ増加率"  value="0" min="0" max="9999">%</label>
+<input type="button" value="+10" onClick="UI.add('#XX属性の敵へダメージ増加率', this.value);">
+<input type="button" value="-10" onClick="UI.add('#XX属性の敵へダメージ増加率', this.value);">
+<input type="button" value="+1" onClick="UI.add('#XX属性の敵へダメージ増加率', this.value);">
+<input type="button" value="-1" onClick="UI.add('#XX属性の敵へダメージ増加率', this.value);">
+</fieldset>
+<fieldset>
+<legend>防御ダウン</legend>
+<p><label>破防率(最大50%)：<input type="number" id="破防率" value="0" min="0" max="50">%</label>
+<input type="button" value="+10" onClick="UI.add('#破防率', this.value);UI.calcDefenceRate();">
+<input type="button" value="-10" onClick="UI.add('#破防率', this.value);UI.calcDefenceRate();">
+<input type="button" value="+1" onClick="UI.add('#破防率', this.value);UI.calcDefenceRate();">
+<input type="button" value="-1" onClick="UI.add('#破防率', this.value);UI.calcDefenceRate();">
+<p>↑ガードブレイク＆破防コア＆奥義の防御％ダウン	
+<p><label>固定値防御減少：<input type="number" id="固定値防御減少" class="LARGE" value="0" step="100" min="0" max="999999"></label>
+<input type="button" value="0" onClick="UI.change('#固定値防御減少', this.value);UI.calcDefenceRate();">
+<input type="button" value="固定値防御減少スキル.." onClick="UI.openDefenceRateDialog();">
+<p>↑防御力を～ポイント減少させる。の合計値を入力
+</fieldset>
+<p><label>貫通力：<input type="number" id="貫通力" value="20" step="10" min="0" max="9999">%</label>
+<input type="button" value="+10" onClick="UI.add('#貫通力', this.value);">
+<input type="button" value="-10" onClick="UI.add('#貫通力', this.value);">
+<input type="button" value="+1" onClick="UI.add('#貫通力', this.value);">
+<input type="button" value="-1" onClick="UI.add('#貫通力', this.value);">
+</fieldset>
+</div>
+<div id="RIGHT">
+<fieldset id="防御側">
+<legend>防御側</legend>
+<p><label>ボス一覧：<select id="ボス一覧"></select></label>
+<p><label>レベル：<input type="number" id="敵レベル" value="83" min="0" max="999"></label>
+<input type="button" value="+1" onClick="UI.add('#敵レベル', this.value);UI.calcDefenceRate();">
+<input type="button" value="-1" onClick="UI.add('#敵レベル', this.value);UI.calcDefenceRate();"><label>　属性：<select id="ボスの属性"></select></label>
+<p><label>防御力：<input type="number" id="敵防御力" class="X-LARGE" value="" readonly="readonly"></label>
+<p><label>防御上昇バフ：<input type="number" id="敵防御上昇バフ" value="0" min="0" max="1000">%</label>
+<input type="button" value="+50" onClick="UI.add('#敵防御上昇バフ', this.value);UI.calcDefenceRate();">
+<input type="button" value="-50" onClick="UI.add('#敵防御上昇バフ', this.value);UI.calcDefenceRate();">
+<input type="button" value="0" onClick="UI.change('#敵防御上昇バフ', this.value);UI.calcDefenceRate();">
+<p><label>実防御率：<input type="number" id="実防御率" class="X-LARGE" value="" readonly="readonly" data-toFixed="2" step="0.01">%</label>
+</fieldset>
+<fieldset id="ダンジョン">
+<legend>ダンジョン</legend>
+<fieldset>
+<legend>ダメージ減算率</legend>
+<p><label>ID：<input type="number" id="IDダメージ減算" value="90" min="0" max="9999">%</label>
+<input type="button" value="90" onClick="UI.change('#IDダメージ減算', this.value);">
+<input type="button" value="70" onClick="UI.change('#IDダメージ減算', this.value);">
+<input type="button" value="55" onClick="UI.change('#IDダメージ減算', this.value);">
+<p><label>特殊：<input type="number" id="特殊ダメージ減算" value="84" min="0" max="9999">%</label>
+<input type="button" value="90" onClick="UI.change('#特殊ダメージ減算', this.value);">
+<input type="button" value="84" onClick="UI.change('#特殊ダメージ減算', this.value);">
+<input type="button" value="0" onClick="UI.change('#特殊ダメージ減算', this.value);">
+<p><label>靱性：<input type="number" id="靱性ダメージ減算" value="50" min="0" max="9999">%</label>
+<input type="button" value="50" onClick="UI.change('#靱性ダメージ減算', this.value);">
+<input type="button" value="0" onClick="UI.change('#靱性ダメージ減算', this.value);">
+</fieldset>
+</fieldset>
+<p>
+<input type="button" id="計算" value="計算" onClick="UI.calc();">　
+<input type="button" id="結果クリア" value="結果クリア" onClick="UI.ResultClear();">
+<input type="button" class="devhidden" value="単体テスト用" onClick="UI.UnitTest();" id="UnitTest">
+<p><label>結果URL：<input type="url" id="URL生成" value="" onclick="this.select(0, this.value.length)" readonly="readonly"></label><input type="button" id="ページを開きなおす" value="ページを開きなおす" onClick="UI.transformURL();">
+<fieldset id="計算結果">
+<legend>計算結果</legend>
+<table id="calcResultTable">
+	<thead>
+		<tr>		
+			<th rowspan="3">スキル名</th>
+			<th colspan="4">ダメージ</th>
+			<th rowspan="3">実会心率</th>
+		</tr>
+		<tr>
+			<th rowspan="2">スキル欄</th>
+			<th colspan="2">
+				<input id="tab1" type="radio" class="hidden" name="tab_radio" value="CRITICAL" checked onClick="UI.TabOnChanged(this);"/>
+				<label class="button" for="tab1">会心時</label>
+				<input id="tab2" type="radio" class="hidden" name="tab_radio" value="NORMAL" onClick="UI.TabOnChanged(this);"/>
+				<label class="button" for="tab2">非会心時</label>
+				<input id="tab3" type="radio" class="hidden" name="tab_radio" value="BASED" onClick="UI.TabOnChanged(this);"/>
+				<label class="button" for="tab3">期待値</label>
+			</th>
+			<th rowspan="2">DOT</th>
+		</tr>
+		<tr>
+			<th>基準</th>
+			<th>下限　～　上限</th>
+		</tr>
+  </thead>
+	<tbody></tbody>
+</table>
+<br>※計算結果の見方
+<br>スキル名：属性一致スキルは大文字表記
+<br>スキル欄：クライアントのスキル欄ダメージ表記値
+<br>会心時：非会心ダメージ＊会心ダメージ増加率
+<br>非会心時：非会心ダメージ
+<br>期待値：会心ダメージ*実会心率 + 非会心ダメージ*非会心率
+<br>DOT：スキル欄に「攻撃力の5%にXXポイントを加えたダメージを与え続ける」と表記されているスキル。
+<br>武器はツインソード、サイズ、グリモワールが該当します。表記値は1スタックのダメージ
+<br>実会心率：LV差補正済みの会心率
+<br>設置スキルは1HITのダメージ
+</fieldset>
+</div>
+</section>
+<section id="jquery-ui-dialog-defenceRate" title="固定値防御減少スキル" class="hidden">
+    <form>
+    <p>スキル名とスキルLVを入力し、<br>加算ボタンを押下してください。
+	<hr>
+	<p><label>スキル名：<br><select id="dialog-SkillName"></select></label>
+    <p><label>スキルLV：<input type="number" id="dialog-SkillLv" value="1" min="1" max="999"/></label><input type="button" value="+1" onClick="UI.add('#dialog-SkillLv', this.value);UI.DialogOnDefenceDown();"><input type="button" value="-1" onClick="UI.add('#dialog-SkillLv', this.value);UI.DialogOnDefenceDown();">
+	<p><label>減少値：<input type="number" id="dialog-DefenceDown" class="LARGE" value="0" min="0" max="99999"/></label><input type="button" value="+1" onClick="UI.add('#dialog-DefenceDown', this.value);"><input type="button" value="-1" onClick="UI.add('#dialog-DefenceDown', this.value);">
+    </form>
+</section>
+<section id="jquery-ui-dialog-baseDefence" title="基準防御力" class="hidden">
+    <form>
+    <p>モンスターのLVを入力し、設定ボタンを押下してください。
+	<hr>
+    <p><label>レベル：<input type="number" id="dialog-MonsterLv" value="1" min="1" max="999"/></label><input type="button" value="+1" onClick="UI.add('#dialog-MonsterLv', this.value);UI.DialogOnBaseDefence();"><input type="button" value="-1" onClick="UI.add('#dialog-MonsterLv', this.value);UI.DialogOnBaseDefence();">
+	<p><label>基準防御力：<input type="number" id="dialog-BaseDefence" class="LARGE" value="0" min="0" max="99999"/></label><input type="button" value="+1" onClick="UI.add('#dialog-BaseDefence', this.value);"><input type="button" value="-1" onClick="UI.add('#dialog-BaseDefence', this.value);">
+    </form>
+</section>	
+</body>
+</html>
