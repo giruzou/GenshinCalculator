@@ -6,7 +6,7 @@
 ## [DEMO](https://umyuu.github.io/GenshinCalculator/genshin_calc.html)
 
 ## Install
-[download a ZIP](archive/master.zip) file.
+[download a ZIP](https://github.com/umyuu/GenshinCalculator/archive/master.zip) file.
 
 ## Setup
 1. Dependencies installs or CDN provider Links
@@ -18,4 +18,4 @@
 - decimal.js v4.0.3
 
 ## Source code License
-[MIT License](blob/master/LICENSE)
+[MIT License](LICENSE)
