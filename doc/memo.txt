@@ -1,0 +1,38 @@
+□Directory Deploy
+./
+├ doc/             … document.
+│  └ MEMO.txt      … It is a file that is open now.
+├ vender/          … 3rd party Library Directory.
+│  └ ...
+├ LICENSE           … Source code License Text.
+├ README.md         … GitHub README.md
+├ genshin_calc.css  … stylesheet.
+├ genshin_calc.html … main html.
+└ genshin_def.js    … main code.
+
+
+-----------------------------------------
+--         Program Flow.
+-----------------------------------------
+--         Main Flow.
+-----------------------------------------
+genshin_calc.html 計算ボタン.
+ i, genshin_def.js UI.calc
+      a. UI.getFormData
+      b. App.Calc
+      c. UI.createURL
+------------------------------------------
+--          Key Point.
+------------------------------------------
+App.防御力.prototype.防御率 
+App.SkillTable
+-----------------------------------------
+
+
+□FAQ
+Q, genshin_def.js large files
+A, In FC 2 we used in the past, since the file locations were random server, we integrated them into one file.
+
+Q, Why is damage calculator implemented with javascript programming language?
+A1, I wanted to remember JavaScript.
+A2, You can share the damage calculation simulator link.
