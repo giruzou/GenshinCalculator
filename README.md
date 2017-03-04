@@ -1,4 +1,4 @@
-# 幻想神域ダメージ計算シミュレータ
+# 幻想神域ダメージ計算シミュレータ [GitHub](https://github.com/umyuu/GenshinCalculator)
 Aura Kingdom Damage Calculator.
 
 Last-Modified:2017/03/04
