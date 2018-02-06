@@ -271,6 +271,7 @@ Util.BASED_DEFENSE = function(lv) {
 	Decimal.config({ errors: false });
 	// Decimalクラスは不変クラスなため、計算に使うstatic変数を追加する。
 	Decimal.ZERO = Decimal.ZERO || new Decimal(0);
+    Decimal.ONE = Decimal.ONE || new Decimal(1);
 	Decimal.HUNDRED = Decimal.HUNDRED || new Decimal(100);
 	jQuery.event.add(window, 'load', function() {
             UI.OnLoad();
